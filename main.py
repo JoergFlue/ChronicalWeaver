@@ -49,9 +49,15 @@ def main():
     # For now, just show version info
     print(f"Chronicle Weaver {chronicle_weaver.__version__}")
     print("Phase 0: Foundation setup complete")
-    print("UI initialization will be implemented in Phase 1")
+    print("Launching UI...")
 
-    return 0
+    from PyQt6.QtWidgets import QApplication
+    from ui.main_window import MainWindow
+
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    return app.exec()
 
 
 if __name__ == "__main__":

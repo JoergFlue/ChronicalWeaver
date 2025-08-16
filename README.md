@@ -114,12 +114,12 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Project Status
 
-🚧 **In Development** - Currently implementing Phase 0: Planning & Foundation
+🚧 **In Development** - Phase 1: Core LLM & Main Agent System implemented (UI, LLM, agent system, configuration, and tests complete). Now preparing for Phase 2: Memory & Data Persistence.
 
 ### Development Phases
 
-- **Phase 0**: Planning & Foundation *(Current)*
-- **Phase 1**: Core LLM & Main Agent System
+- **Phase 0**: Planning & Foundation
+- **Phase 1**: Core LLM & Main Agent System *(Current)*
 - **Phase 2**: Memory & Data Persistence
 - **Phase 3**: Agent Management & Core Sub-Agents
 - **Phase 4**: Image Generation & Advanced Features

@@ -214,6 +214,12 @@ Event-driven updates between components:
 - Minimal coupling between components
 - Well-defined interfaces
 
+#### UI / Functionality / Configuration Separation
+- UI code (PyQt6) must not contain business logic or direct configuration management.
+- All configuration and settings operations are handled by dedicated manager modules (e.g., ConfigManager).
+- UI components interact with configuration only via manager interfaces.
+- Business logic and data management are strictly separated from UI rendering and event handling.
+
 ### Testability
 - Dependency injection for external services
 - Mock-friendly design

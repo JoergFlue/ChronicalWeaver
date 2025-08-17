@@ -51,14 +51,14 @@ class LLMConfigManager:
             ),
             "ollama": LLMConfig(
                 provider="ollama",
-                model="llama2",
+                model="",
                 base_url="http://localhost:11434",
                 temperature=0.7
             ),
             "lm_studio": LLMConfig(
-                provider="openai",
-                model="local-model",
-                base_url="http://localhost:1234/v1",
+                provider="lm_studio",
+                model="",
+                base_url="http://localhost:1234",
                 temperature=0.7
             )
         }

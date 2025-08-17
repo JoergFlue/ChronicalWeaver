@@ -1,5 +1,20 @@
 {
-  "host_url": "http://localhost:11434",
-  "provider": "lm_studio",
-  "model": null
+  "hosts": [
+    {
+      "name": "Local Ollama",
+      "host_url": "http://localhost:11434",
+      "provider": "ollama",
+      "endpoint_url": "/api/tags",
+      "models": []
+    },
+    {
+      "name": "LM Studio",
+      "host_url": "http://localhost:1234",
+      "provider": "lm_studio",
+      "endpoint_url": "/v1/models",
+      "models": []
+    }
+  ],
+  "selected_host": "Local Ollama",
+  "selected_model": ""
 }

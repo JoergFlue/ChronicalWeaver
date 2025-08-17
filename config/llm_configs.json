@@ -21,7 +21,7 @@
   },
   "ollama": {
     "provider": "ollama",
-    "model": "llama2",
+    "model": "llama3.1:8b",
     "api_key": null,
     "base_url": "http://localhost:11434",
     "temperature": 0.7,
@@ -30,13 +30,17 @@
     "stream": true
   },
   "lm_studio": {
-    "provider": "openai",
+    "provider": "lm_studio",
     "model": "local-model",
     "api_key": null,
-    "base_url": "http://localhost:1234/v1",
+    "base_url": "http://127.0.0.1:1234",
     "temperature": 0.7,
     "max_tokens": 2048,
     "timeout": 30,
     "stream": true
+  },
+  "LM Studio": {
+    "provider": "LM Studio",
+    "model": "local-model"
   }
 }

@@ -68,11 +68,7 @@ class RoleplayTab(QWidget):
         self.send_button.clicked.connect(self._send_message)
         self.send_button.setDefault(True)
 
-        self.clear_button = QPushButton("Clear")
-        self.clear_button.clicked.connect(self.clear_conversation)
-
         button_layout.addStretch()
-        button_layout.addWidget(self.clear_button)
         button_layout.addWidget(self.send_button)
         input_layout.addLayout(button_layout)
 
@@ -151,13 +147,13 @@ class RoleplayTab(QWidget):
         self._current_ai_message += text
         cursor = self.conversation_area.textCursor()
         cursor.movePosition(QTextCursor.MoveOperation.End)
-        cursor.insertText(text)
+        cursor.insertHtml(self._escape_html(text))
         self.conversation_area.setTextCursor(cursor)
         self.conversation_area.ensureCursorVisible()
 
     def _finalize_ai_message(self):
         """Finalize the current AI message"""
-        self.conversation_area.append("</span></div>")
+        pass
 
     def _add_system_message(self, message: str):
         """Add system message to conversation"""
@@ -167,15 +163,5 @@ class RoleplayTab(QWidget):
 
     def _escape_html(self, text: str) -> str:
         """Escape HTML characters in text"""
-        return (text.replace('&', '&')
-                   .replace('<', '<')
-                   .replace('>', '>')
-                   .replace('"', '"')
-                   .replace("'", '&#x27;'))
-
-    def clear_conversation(self):
-        """Clear the conversation history"""
-        self.conversation_area.clear()
-        self.main_agent.clear_history()
-        self._add_system_message("Conversation cleared. Start a new conversation!")
-        logger.info("Conversation cleared")
+        import html
+        return html.escape(text, quote=True)

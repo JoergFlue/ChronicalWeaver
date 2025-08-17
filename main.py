@@ -14,6 +14,11 @@ project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
 import chronicle_weaver
+import asyncio
+
+# Workaround for ProactorEventLoop shutdown bug on Windows
+if sys.platform.startswith("win"):
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 
 def main():
@@ -57,7 +62,18 @@ def main():
     app = QApplication(sys.argv)
     window = MainWindow()
     window.show()
-    return app.exec()
+    result = app.exec()
+    try:
+        loop = asyncio.get_running_loop()
+        if loop.is_running():
+            loop.stop()
+        loop.close()
+    except RuntimeError:
+        # No running event loop, nothing to close
+        pass
+    except Exception:
+        pass
+    return result
 
 
 if __name__ == "__main__":

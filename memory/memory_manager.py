@@ -4,6 +4,7 @@ from .database_manager import DatabaseManager
 from .conversation_memory import ConversationMemory
 from .persistent_memory import PersistentMemory
 from .summarization import ConversationSummarizer
+from config.config_manager import ConfigManager
 import logging
 from datetime import datetime, timedelta
 
@@ -13,13 +14,18 @@ class MemoryManager:
     """Unified interface for all memory operations"""
     
     def __init__(self, database_url: str = None):
-        self.db_manager = DatabaseManager(database_url)
-        self.persistent_memory = PersistentMemory(self.db_manager)
-        self.summarizer = ConversationSummarizer()
-        self.active_conversations = {}  # conversation_id -> ConversationMemory
+        settings = ConfigManager.load_user_settings()
+        self.enabled = settings.get("enable_memory_management", True)
+        self.db_manager = DatabaseManager(database_url) if self.enabled else None
+        self.persistent_memory = PersistentMemory(self.db_manager) if self.enabled else None
+        self.summarizer = ConversationSummarizer() if self.enabled else None
+        self.active_conversations = {} if self.enabled else None  # conversation_id -> ConversationMemory
     
-    def get_conversation_memory(self, conversation_id: int = None) -> ConversationMemory:
+    def get_conversation_memory(self, conversation_id: int = None) -> Optional[ConversationMemory]:
         """Get or create conversation memory for a session"""
+        if not self.enabled:
+            logger.info("Memory management is disabled.")
+            return None
         if conversation_id is None:
             # Create new conversation
             memory = ConversationMemory(self.db_manager)
@@ -34,8 +40,11 @@ class MemoryManager:
         
         return self.active_conversations[conversation_id]
     
-    def start_new_conversation(self, title: str = None) -> tuple[int, ConversationMemory]:
+    def start_new_conversation(self, title: str = None) -> Optional[tuple[int, ConversationMemory]]:
         """Start a new conversation and return ID and memory object"""
+        if not self.enabled:
+            logger.info("Memory management is disabled.")
+            return None
         memory = ConversationMemory(self.db_manager)
         conversation_id = memory.create_new_conversation(title)
         self.active_conversations[conversation_id] = memory
@@ -45,6 +54,9 @@ class MemoryManager:
     
     def summarize_conversation(self, conversation_id: int, force: bool = False) -> Optional[str]:
         """Create or update conversation summary"""
+        if not self.enabled:
+            logger.info("Memory management is disabled.")
+            return None
         try:
             # Check if summary already exists and is recent
             if not force:
@@ -79,6 +91,14 @@ class MemoryManager:
     
     def get_relevant_context(self, query: str, conversation_id: int = None, limit: int = 5) -> Dict[str, Any]:
         """Get relevant context from memory for a query"""
+        if not self.enabled:
+            logger.info("Memory management is disabled.")
+            return {
+                "characters": [],
+                "props": [],
+                "previous_conversations": [],
+                "current_conversation_summary": None
+            }
         context = {
             "characters": [],
             "props": [],
@@ -112,36 +132,60 @@ class MemoryManager:
             return context
     
     # Delegate methods to persistent memory
-    def save_character_state(self, character_data: Dict[str, Any]) -> int:
+    def save_character_state(self, character_data: Dict[str, Any]) -> Optional[int]:
         """Save character state to persistent memory"""
+        if not self.enabled:
+            logger.info("Memory management is disabled.")
+            return None
         return self.persistent_memory.save_character_state(character_data)
     
-    def get_character_states(self, conversation_id: int = None) -> List[Dict[str, Any]]:
+    def get_character_states(self, conversation_id: int = None) -> Optional[List[Dict[str, Any]]]:
         """Get character states from persistent memory"""
+        if not self.enabled:
+            logger.info("Memory management is disabled.")
+            return None
         return self.persistent_memory.get_character_states(conversation_id)
     
-    def save_prop_item(self, prop_data: Dict[str, Any]) -> int:
+    def save_prop_item(self, prop_data: Dict[str, Any]) -> Optional[int]:
         """Save prop item to persistent memory"""
+        if not self.enabled:
+            logger.info("Memory management is disabled.")
+            return None
         return self.persistent_memory.save_prop_item(prop_data)
     
-    def get_prop_items(self, **kwargs) -> List[Dict[str, Any]]:
+    def get_prop_items(self, **kwargs) -> Optional[List[Dict[str, Any]]]:
         """Get prop items from persistent memory"""
+        if not self.enabled:
+            logger.info("Memory management is disabled.")
+            return None
         return self.persistent_memory.get_prop_items(**kwargs)
     
-    def save_agent_configuration(self, agent_data: Dict[str, Any]) -> int:
+    def save_agent_configuration(self, agent_data: Dict[str, Any]) -> Optional[int]:
         """Save agent configuration to persistent memory"""
+        if not self.enabled:
+            logger.info("Memory management is disabled.")
+            return None
         return self.persistent_memory.save_agent_configuration(agent_data)
     
-    def get_agent_configurations(self, enabled_only: bool = False) -> List[Dict[str, Any]]:
+    def get_agent_configurations(self, enabled_only: bool = False) -> Optional[List[Dict[str, Any]]]:
         """Get agent configurations from persistent memory"""
+        if not self.enabled:
+            logger.info("Memory management is disabled.")
+            return None
         return self.persistent_memory.get_agent_configurations(enabled_only)
     
-    def get_conversations(self, limit: int = 50) -> List[Dict[str, Any]]:
+    def get_conversations(self, limit: int = 50) -> Optional[List[Dict[str, Any]]]:
         """Get conversations from persistent memory"""
+        if not self.enabled:
+            logger.info("Memory management is disabled.")
+            return None
         return self.persistent_memory.get_conversations(limit)
     
-    def archive_conversation(self, conversation_id: int) -> bool:
+    def archive_conversation(self, conversation_id: int) -> Optional[bool]:
         """Archive conversation in persistent memory"""
+        if not self.enabled:
+            logger.info("Memory management is disabled.")
+            return None
         # Remove from active conversations
         if conversation_id in self.active_conversations:
             del self.active_conversations[conversation_id]
@@ -150,6 +194,9 @@ class MemoryManager:
     
     def cleanup_old_data(self, days_to_keep: int = 90):
         """Clean up old data to manage storage"""
+        if not self.enabled:
+            logger.info("Memory management is disabled.")
+            return
         try:
             cutoff_date = datetime.utcnow() - timedelta(days=days_to_keep)
             
@@ -174,6 +221,9 @@ class MemoryManager:
     
     def close(self):
         """Close memory manager and database connections"""
+        if not self.enabled:
+            logger.info("Memory management is disabled.")
+            return
         self.active_conversations.clear()
         self.db_manager.close()
         logger.info("Memory manager closed")

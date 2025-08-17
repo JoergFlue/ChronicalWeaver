@@ -60,13 +60,14 @@ class MainWindow(QMainWindow):
         # Set provider in LLMManager
         if provider:
             success = self.llm_manager.set_host(provider)
-            if success:
+            connected = self.llm_manager.test_connection(provider)
+            if success and connected:
                 msg = f"Connected to {provider}"
                 if model:
                     msg += f": {model}"
                 self.status_bar.showMessage(msg)
             else:
-                self.status_bar.showMessage(f"Could not connect to {provider} API.")
+                self.status_bar.showMessage("Not connected")
         else:
             self.status_bar.showMessage("No provider configured.")
 

@@ -31,7 +31,7 @@
   },
   "lm_studio": {
     "provider": "lm_studio",
-    "model": "local-model",
+    "model": "sex_roleplay-3.2-1b-i1",
     "api_key": null,
     "base_url": "http://127.0.0.1:1234",
     "temperature": 0.7,
@@ -42,5 +42,9 @@
   "LM Studio": {
     "provider": "LM Studio",
     "model": "sex_roleplay-3.2-1b-i1"
+  },
+  "Local Ollama": {
+    "provider": "Local Ollama",
+    "model": "llama3.1:8b"
   }
 }

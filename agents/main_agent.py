@@ -52,18 +52,17 @@ Always prioritize user experience and creative collaboration."""
         try:
             # Add user message to history
             user_msg = AgentMessage(content=message, role="user")
+            logger.info(f"User sent message: {message}")
             self.add_to_history(user_msg)
 
             # Prepare conversation context
             conversation_context = self._prepare_conversation_context(context)
 
-            # Generate response using LLM
-            response_content = ""
-            async for chunk in self.llm_manager.generate_response(
-                messages=conversation_context,
-                stream=True
-            ):
-                response_content += chunk
+            # Flatten messages into a single prompt string
+            prompt = "\n".join([msg["content"] for msg in conversation_context])
+
+            # Generate response using LLM (synchronous for testing)
+            response_content = self.llm_manager.generate_response(prompt)
 
             # Create response message
             response = AgentMessage(

@@ -1,8 +1,9 @@
 {
+  "enable_memory_management": false,
   "ollama": {
     "base_url": "http://localhost:11434",
     "model": "llama3.1:8b"
   },
-  "last_provider": "LM Studio",
-  "last_model": "sex_roleplay-3.2-1b-i1"
+  "last_provider": "Local Ollama",
+  "last_model": "llama3.1:8b"
 }

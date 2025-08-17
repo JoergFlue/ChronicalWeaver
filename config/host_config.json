@@ -15,6 +15,6 @@
       "models": []
     }
   ],
-  "selected_host": "LM Studio",
+  "selected_host": "Local Ollama",
   "selected_model": ""
 }

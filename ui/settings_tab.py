@@ -1,5 +1,5 @@
 import os
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QComboBox, QPushButton
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QComboBox, QPushButton, QCheckBox
 import logging
 from llm.llm_manager import LLMManager
 
@@ -17,12 +17,19 @@ class SettingsTab(QWidget):
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.DEBUG)
 
+        # Memory management checkbox
+        from config.config_manager import ConfigManager
+        settings = ConfigManager.load_user_settings()
+        self.memory_checkbox = QCheckBox("Enable Memory Management", self)
+        self.memory_checkbox.setChecked(settings.get("enable_memory_management", True))
+
         self.layout.addWidget(QLabel("Host:", self))
         self.layout.addWidget(self.host_dropdown)
         self.layout.addWidget(QLabel("Available Models:", self))
         self.layout.addWidget(self.model_dropdown)
         self.layout.addWidget(QLabel("Current Model:", self))
         self.layout.addWidget(self.current_model_label)
+        self.layout.addWidget(self.memory_checkbox)
         self.layout.addWidget(self.save_button)
 
         self._populate_hosts()
@@ -100,6 +107,7 @@ class SettingsTab(QWidget):
         settings = ConfigManager.load_user_settings()
         settings["last_provider"] = provider
         settings["last_model"] = model
+        settings["enable_memory_management"] = self.memory_checkbox.isChecked()
         ConfigManager.save_user_settings(settings)
         self.current_model_label.setText(model)
         if self.on_settings_saved:

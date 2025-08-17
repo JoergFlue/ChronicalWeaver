@@ -4,16 +4,54 @@ import logging
 from typing import AsyncGenerator, Optional, Dict, Any
 import litellm
 from .llm_config import LLMConfigManager, LLMConfig
+from .host_connection import HostConnection
 
 logger = logging.getLogger(__name__)
 
 class LLMManager:
-    """Manages multiple LLM providers using LiteLLM"""
+    """Manages multiple LLM providers using LiteLLM and HostConnection"""
 
     def __init__(self):
         self.config_manager = LLMConfigManager()
-        self.current_provider = "openai"  # Default
+        self.host_connection = HostConnection()
+        self.current_provider = self.host_connection.provider or "openai"
         self._setup_litellm()
+
+    def list_models(self) -> list:
+        """List available models for the current provider using config endpoint"""
+        provider = self.host_connection.provider
+        host_url = self.host_connection.host_url
+        config_path = self.host_connection.config_path
+        import requests, json, os
+
+        # Load endpoint from config
+        if os.path.exists(config_path):
+            with open(config_path, "r") as f:
+                config_data = json.load(f)
+            provider_cfg = config_data.get(provider, {})
+            endpoint = provider_cfg.get("models_endpoint", None)
+        else:
+            endpoint = None
+
+        if not endpoint:
+            logger.info(f"No models endpoint configured for provider {provider}.")
+            return []
+
+        url = host_url + endpoint
+        try:
+            resp = requests.get(url)
+            resp.raise_for_status()
+            data = resp.json()
+            # Generic extraction: try common keys
+            if "models" in data:
+                return [m.get("name", m.get("id", "")) for m in data["models"]]
+            if "data" in data:
+                return [m.get("id", m.get("name", "")) for m in data["data"]]
+            # Fallback: try to extract any string values
+            return [str(m) for m in data.get("models", [])]
+        except Exception as e:
+            logger.error(f"{provider} model listing error: {e}")
+            return []
 
     def _setup_litellm(self):
         """Configure LiteLLM settings"""
@@ -22,17 +60,15 @@ class LLMManager:
 
     def set_provider(self, provider_name: str) -> bool:
         """Switch to a different LLM provider"""
-        if provider_name not in self.config_manager.configs:
-            logger.error(f"Provider {provider_name} not configured")
-            return False
-
+        self.host_connection.provider = provider_name
+        self.host_connection.save_config()
         self.current_provider = provider_name
         logger.info(f"Switched to provider: {provider_name}")
         return True
 
     def get_current_config(self) -> Optional[LLMConfig]:
         """Get the current provider configuration"""
-        return self.config_manager.get_config(self.current_provider)
+        return self.config_manager.get_config(self.host_connection.provider)
 
     async def generate_response(
         self, 

@@ -41,6 +41,6 @@
   },
   "LM Studio": {
     "provider": "LM Studio",
-    "model": "local-model"
+    "model": "sex_roleplay-3.2-1b-i1"
   }
 }

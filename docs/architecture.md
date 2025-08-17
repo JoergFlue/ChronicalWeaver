@@ -35,6 +35,17 @@ Chronicle Weaver is designed as a modular, scalable AI roleplaying assistant wit
 └─────────────────────────────────────────────────────────────┘
 ```
 
+## Logging Strategy
+
+Chronicle Weaver implements extensive logging across all layers to ensure traceability, debugging, and operational monitoring.
+
+- **Centralized Logging**: All major subsystems (UI, agents, memory, LLM, images) emit structured logs to a unified logging interface.
+- **Log Levels**: Supports DEBUG, INFO, WARNING, ERROR, and CRITICAL levels for granular control.
+- **Log Destinations**: Logs are written to local files, with optional integration to external log management systems.
+- **UI Integration**: A dedicated Logging Tab in the UI allows users to view, filter, and export logs.
+- **Error Reporting**: All exceptions and critical failures are logged with stack traces and context information.
+- **Audit Trail**: Key user actions and system events are recorded for auditing and troubleshooting.
+
 ## Core Components
 
 ### 1. UI Layer (`/ui`)
@@ -192,20 +203,26 @@ Event-driven updates between components:
 
 ## Testing Strategy
 
+### Integration Testing
+
+- **Mandatory Integration Tests Before and After Each Change**: Every code change must be preceded and followed by integration tests to ensure system stability and correct interactions between components.
+- **Continuous Integration**: Automated pipelines run integration tests on every commit and pull request.
+- **Database and API Integration**: All database and external API interactions are covered by integration tests using real or mocked services.
+
 ### Unit Tests
 - Individual component testing
 - Mock external dependencies
 - PyQt widget testing with pytest-qt
 
-### Integration Tests
-- Component interaction testing
-- Database integration testing
-- API integration testing (with mocks)
-
 ### End-to-End Tests
 - Full workflow testing
 - UI automation testing
 - Performance testing
+
+### Workability Verification
+
+- **main.py Workability Test**: After each test (unit, integration, or end-to-end), the workability of `main.py` must be verified by launching the application and confirming core functionality.
+- **Automated Smoke Tests**: Basic startup and UI checks are automated to quickly detect regressions.
 
 ## Development Principles
 

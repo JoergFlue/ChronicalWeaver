@@ -26,6 +26,7 @@ Implement advanced features including image generation capabilities, sophisticat
 - [ ] Image generation prompts are context-aware
 - [ ] All advanced agents integrate smoothly with main workflow
 - [ ] Settings tab configures all external APIs
+- [ ] Integration testing is performed before and after each change
 
 ## Detailed Implementation Steps
 
@@ -1413,6 +1414,8 @@ When suggesting props:
 - **Agent Coordination**: Test multi-agent workflows
 - **API Integration**: Test external API connections with error handling
 - **File Management**: Test image storage, thumbnails, metadata
+- **Mandatory**: Integration testing must be performed before and after each change
+- **Verification**: After each test, verify workability of main.py
 
 ### Performance Tests
 - **Image Generation Speed**: Benchmark generation times across providers

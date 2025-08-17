@@ -25,8 +25,13 @@ Implement the comprehensive agent management system with a sophisticated UI for 
 - [ ] Agent system prompts generate correctly from configurations
 - [ ] Sub-agent delegation works without conflicts
 - [ ] Agent performance monitoring works
+- [ ] Integration testing is performed to verify agent management, sub-agent delegation, and UI-agent interactions before and after each change
 
 ## Detailed Implementation Steps
+
+#### Integration Testing
+- Integration testing is required before and after each change to verify that agent management, sub-agent delegation, and UI-agent interactions work as intended.
+- After each integration test, verify the workability of `main.py` to ensure the application entry point remains functional.
 
 ### Week 1: Agent Management Infrastructure
 
@@ -1619,4 +1624,3 @@ Be specific about details mentioned and avoid assumptions."""
             if char_name:
                 if char_name not in self.fact_database[conv_key]["characters"]:
                     self.fact_database[conv_key]["characters"][char_name] = {}
-                

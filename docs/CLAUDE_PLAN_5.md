@@ -26,6 +26,7 @@ The final phase focuses on polishing the user experience, conducting comprehensi
 - [ ] Installation process is smooth for end users
 - [ ] Error handling provides helpful user messages
 - [ ] Application handles edge cases gracefully
+- [ ] Integration testing is performed before and after each change
 
 ## Detailed Implementation Steps
 
@@ -1679,6 +1680,8 @@ For more detailed information, see the complete documentation at [docs.chronicle
 - **UI Tests**: Automated interface testing with PyQt Test
 - **Deployment Tests**: Installation and executable testing
 - **Accessibility Tests**: Screen reader compatibility, keyboard navigation
+- **Mandatory**: Integration testing must be performed before and after each change
+- **Verification**: After each test, verify workability of main.py
 
 ### Quality Metrics
 - **Code Coverage**: Minimum 95% line coverage
@@ -1720,4 +1723,3 @@ Phase 5 concludes with Chronicle Weaver ready for production deployment:
 - Professional documentation supporting users and developers
 - Robust error handling and graceful failure modes
 - Smooth installation and setup process for end users
-

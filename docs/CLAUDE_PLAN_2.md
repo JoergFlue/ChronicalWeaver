@@ -24,6 +24,7 @@ Implement robust memory and data persistence systems that enable Chronicle Weave
 - [ ] Memory can be queried and filtered effectively
 - [ ] Database migrations work for schema updates
 - [ ] Memory performance is acceptable for large conversation histories
+- [ ] Integration testing is performed to verify memory-agent and database interactions before and after each change
 
 ## Detailed Implementation Steps
 
@@ -1216,6 +1217,10 @@ class ConversationSummarizer:
 - **Memory-Agent Integration**: Test memory access from agents
 - **Database Performance**: Test query performance with large datasets
 - **Memory Consolidation**: Test summarization and cleanup processes
+
+#### Integration Testing
+- Integration testing is required before and after each change to verify that memory-agent and database interactions work as intended.
+- After each integration test, verify the workability of `main.py` to ensure the application entry point remains functional.
 
 ### Performance Tests
 - **Large Conversation Handling**: Test with 1000+ messages

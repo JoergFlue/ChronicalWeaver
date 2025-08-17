@@ -23,6 +23,7 @@ Implement the core LLM integration layer and Main Agent system that handles dire
 - [ ] LLM backend can be switched dynamically
 - [ ] Error handling works for API failures and invalid inputs
 - [ ] Basic logging system captures all interactions
+- [ ] Integration testing is performed to verify agent-LLM and UI-agent interactions before and after each change
 
 ## Detailed Implementation Steps
 
@@ -899,6 +900,10 @@ class RoleplayTab(QWidget):
 - **Agent-LLM Integration**: Test agent responses with different LLM providers
 - **UI-Agent Integration**: Test UI message flow with agents
 - **Error Handling**: Test graceful degradation scenarios
+
+#### Integration Testing
+- Integration testing is required before and after each change to verify that agent-LLM and UI-agent interactions work as intended.
+- After each integration test, verify the workability of `main.py` to ensure the application entry point remains functional.
 
 ### UI Tests (`tests/ui/`)
 - **Main Window Tests**: Test tab switching, menu actions

@@ -7,11 +7,9 @@ from .roleplay_tab import RoleplayTab
 from llm.llm_manager import LLMManager
 from agents.main_agent import MainAgent
 import logging
+from config.config_manager import ConfigManager
 
 logger = logging.getLogger(__name__)
-
-import os
-import json
 
 class MainWindow(QMainWindow):
     """Main application window with tabbed interface"""
@@ -33,42 +31,44 @@ class MainWindow(QMainWindow):
         logger.info("Main window initialized")
 
     def _load_llm_settings(self):
-        """Load last used LLM provider/model from settings file"""
-        settings_path = os.path.join("config", "user_settings.json")
-        llm_config_path = os.path.join("config", "llm_configs.json")
-        base_url = "http://localhost:11434"
-        model = "llama2"
-        if os.path.exists(settings_path):
-            try:
-                with open(settings_path, "r") as f:
-                    settings = json.load(f)
-                ollama = settings.get("ollama", {})
-                base_url = ollama.get("base_url", base_url)
-                model = ollama.get("model", model)
-            except Exception as e:
-                self.status_bar.showMessage(f"Failed to load LLM settings: {e}")
-        # Update Ollama config in llm_configs.json
-        try:
-            if os.path.exists(llm_config_path):
-                with open(llm_config_path, "r") as f:
-                    llm_configs = json.load(f)
-            else:
-                llm_configs = {}
-            if "ollama" not in llm_configs:
-                llm_configs["ollama"] = {}
-            llm_configs["ollama"]["provider"] = "ollama"
-            llm_configs["ollama"]["model"] = model
-            llm_configs["ollama"]["base_url"] = base_url
-            with open(llm_config_path, "w") as f:
-                json.dump(llm_configs, f, indent=2)
-        except Exception as e:
-            self.status_bar.showMessage(f"Failed to update Ollama config: {e}")
+        """Load last used LLM provider/model from settings file (generic)"""
+        settings = ConfigManager.load_user_settings()
+        provider = settings.get("last_provider")
+        model = settings.get("last_model")
+        base_url = settings.get("last_base_url")
+
+        # Fallback: if not present, try to get any provider section
+        if not provider:
+            for key in settings:
+                if isinstance(settings[key], dict):
+                    provider = key
+                    model = settings[key].get("model")
+                    base_url = settings[key].get("base_url")
+                    break
+
+        # Update provider config in llm_configs.json
+        llm_configs = ConfigManager.load_llm_configs()
+        if provider:
+            if provider not in llm_configs:
+                llm_configs[provider] = {}
+            llm_configs[provider]["provider"] = provider
+            if model:
+                llm_configs[provider]["model"] = model
+            if base_url:
+                llm_configs[provider]["base_url"] = base_url
+            ConfigManager.save_llm_configs(llm_configs)
         # Set provider in LLMManager
-        success = self.llm_manager.set_provider("ollama")
-        if success:
-            self.status_bar.showMessage(f"Connected to Ollama: {model}")
+        if provider:
+            success = self.llm_manager.set_host(provider)
+            if success:
+                msg = f"Connected to {provider}"
+                if model:
+                    msg += f": {model}"
+                self.status_bar.showMessage(msg)
+            else:
+                self.status_bar.showMessage(f"Could not connect to {provider} API.")
         else:
-            self.status_bar.showMessage("Could not connect to Ollama API.")
+            self.status_bar.showMessage("No provider configured.")
 
     def _setup_ui(self):
         """Setup the main UI components"""
@@ -86,7 +86,14 @@ class MainWindow(QMainWindow):
         self.tab_widget.addTab(QWidget(), "Agents")
         self.tab_widget.addTab(QWidget(), "Library")
         from ui.settings_tab import SettingsTab
-        self.tab_widget.addTab(SettingsTab(), "Settings")
+        self.tab_widget.addTab(SettingsTab(
+            on_settings_saved=self._load_llm_settings,
+            on_status_update=self._handle_status_update
+        ), "Settings")
+
+        from ui.logging_tab import LoggingTab
+        self.logging_tab = LoggingTab()
+        self.tab_widget.addTab(self.logging_tab, "Logging")
 
     def _setup_menu_bar(self):
         """Setup the menu bar"""
@@ -104,13 +111,6 @@ class MainWindow(QMainWindow):
         exit_action.triggered.connect(self.close)
         file_menu.addAction(exit_action)
 
-        llm_menu = menubar.addMenu("LLM Host")
-
-        providers = ["openai", "gemini", "ollama", "lm_studio"]
-        for provider in providers:
-            action = QAction(provider.replace("_", " ").title(), self)
-            action.triggered.connect(lambda checked, p=provider: self._switch_llm_provider(p))
-            llm_menu.addAction(action)
 
         help_menu = menubar.addMenu("Help")
 
@@ -129,15 +129,26 @@ class MainWindow(QMainWindow):
         status_str = self.llm_manager.host_connection.get_status()
         self.status_bar.showMessage(status_str)
 
+    def _handle_status_update(self, host, model):
+        """Update status bar when host/model changes from SettingsTab"""
+        msg = "Ready"
+        if host and host != "none":
+            msg = f"Host: {host}"
+            if model and model != "none":
+                msg += f" | Model: {model}"
+        self.status_bar.showMessage(msg)
+
     def _new_conversation(self):
         """Start a new conversation"""
+        logger.debug("Menu action: New Conversation triggered")
         if hasattr(self.roleplay_tab, 'clear_conversation'):
             self.roleplay_tab.clear_conversation()
         logger.info("Started new conversation")
 
     def _switch_llm_provider(self, provider: str):
         """Switch to a different LLM provider"""
-        success = self.llm_manager.set_provider(provider)
+        logger.debug(f"Menu action: Switch LLM Provider triggered ({provider})")
+        success = self.llm_manager.set_host(provider)
         if success:
             models = self.llm_manager.list_models()
             if models:
@@ -157,6 +168,7 @@ class MainWindow(QMainWindow):
 
     def _show_about(self):
         """Show about dialog"""
+        logger.debug("Menu action: About triggered")
         QMessageBox.about(
             self,
             "About Chronicle Weaver",
@@ -164,3 +176,16 @@ class MainWindow(QMainWindow):
             "An AI-driven roleplaying assistant with modular agent systems, "
             "flexible LLM backends, and integrated image generation."
         )
+
+    # Simulation methods for integration testing
+    def simulate_new_conversation(self):
+        """Simulate clicking 'New Conversation' menu action"""
+        self._new_conversation()
+
+    def simulate_switch_llm_provider(self, provider: str):
+        """Simulate switching LLM provider via menu"""
+        self._switch_llm_provider(provider)
+
+    def simulate_show_about(self):
+        """Simulate clicking 'About' menu action"""
+        self._show_about()
